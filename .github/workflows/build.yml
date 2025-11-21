@@ -8,7 +8,7 @@ on:
 
 permissions:
   contents: write
-  releases: write
+  id-token: write
 
 jobs:
   build-deb:
