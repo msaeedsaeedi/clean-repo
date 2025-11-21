@@ -16,14 +16,19 @@
 
 ### Option 1 — Install via APT (recommended)
 
-1. Add the APT repository:
-
+1. Install the GPG Public Key
    ```bash
-   echo "deb [trusted=yes] https://msaeedsaeedi.github.io/clean-repo stable main" \
-     | sudo tee /etc/apt/sources.list.d/clean-repo.list
+   curl -fsSL https://repo.msaeedsaeedi.com/key.asc | sudo gpg --dearmor -o /usr/share/keyrings/clean-repo-archive-keyring.gpg
    ```
 
-2. Update and install:
+2. Add the APT repository:
+
+   ```bash
+   echo "deb [arch=all signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com stable main" | \
+   sudo tee /etc/apt/sources.list.d/clean-repo.list > /dev/null
+   ```
+
+3. Update and install:
 
    ```bash
    sudo apt update
