@@ -1,0 +1,32 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Date: Fri, 21 Nov 2025 18:49:23 +0000
+MD5Sum:
+ 330174d249835442538a44f1f50a4fa6               38 Release
+ ce58daeb46384c066eff889f4747f0f7              329 main/binary-all/Packages.gz
+SHA1:
+ 399563f3d5bf9fd836479dadd57921ca9818a333               38 Release
+ ba359d152c93472e5575c0a657740dab3fa32115              329 main/binary-all/Packages.gz
+SHA256:
+ 42fa012d2116b944f3b0b0ee7f369960d0dfe0dff50e71095561566d275df965               38 Release
+ b8f9f2145187db4086927580b12b7b90f1bccda458e6ec2696c0003a4d1e9ffd              329 main/binary-all/Packages.gz
+SHA512:
+ bc462c5f02e8f98edaac912fd730077ba96fb2889c187105de7eb090371afcfaecf8eab0dc4c6c44a9c9b536b36e54af82cf25dd7c004a7d279161372fd57bbc               38 Release
+ d0a1df6ab4f070abca9ccca2c6c9dc8f033b0b64240563c20b44f10a0de0071aa212762424d51324548169c0ce5acc19731fa12507e15c03535ec0277ffdecaf              329 main/binary-all/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEoPs6MkHehze5+9OzwuYzFxzDvP0FAmkgtDUACgkQwuYzFxzD
+vP0z2xAAuMh9KsJQ8C47Gs7kjFjYKgrpem6A/KOCOq2F3Rhc2L2SmD29rJT/xTl+
+sYJcLUJtLMtgEsPRVXkUp9fq7uM9+k+B8FPeoN+hhArwajINrF/ZAaGfdmcDAAff
+V44FVx5LicwhdW+Eq0PoH+fW5sDVZwlKhejvEDuRgVeuy/Lhr99rLCNLKzaS9UzH
+ZOYmXlbB5lTstGsZ6utqdelUvKRfB/Ovx+fY/F7S6G4/8M0EPptepGBxodTd0Phr
+lgYiERc05Z+Xtc00UL8+hPcMbBDnBl1Px+Lplknr0cTH1x+AMPYFWAtdArPs+Rm1
+CArP7p2J/Ten36Txgp4PiPIy9irnfN6Ixfyb+Y3uIoFLnvHdxkqJGytjkjdgbLsA
+pvs1ONWJqpnEWkrIEo9AS3jHJlvyYYJjVe1xkpEVsaUerUJAvOgiUplH+1DCHhux
+SfhwlqdUJrNesRaghs5PuGqonn9s2fztZCSvqBUjmr19oJdh1QbYVvuL5QTjrTCr
+c5l1C//PBRUipm+knN5Z5oQ5c9IBfAeXfoLP02t15Gra5M+8dzd9gx3PhpUF/QX/
+Ug4KnFGT3aWaA3u6ZMExPxLBsQIu6uK9JEsmn2Br7kY+xJK1Dn6ZGc0BZuLEUTzU
+Ps6RyBUPHO87inU6T9/A6lvFJkq+gW7KdNaQDpDsKyblvNgi9dw=
+=iJro
+-----END PGP SIGNATURE-----
