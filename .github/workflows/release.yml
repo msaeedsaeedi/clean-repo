@@ -1,0 +1,62 @@
+name: Release Debian Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y dpkg-dev build-essential gpg
+
+      - name: Build .deb package
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -i "s/Version: .*/Version: $VERSION/" package/DEBIAN/control
+          dpkg-deb --build --root-owner-group package clean-repo_${VERSION}_all.deb
+
+      - name: Generate APT repository
+        run: |
+          mkdir -p apt-repo/dists/stable/main/binary-all
+          mkdir -p apt-repo/pool/main
+          cp clean-repo_*.deb apt-repo/pool/main/
+          cd apt-repo
+          dpkg-scanpackages pool /dev/null | gzip -9c > dists/stable/main/binary-all/Packages.gz
+          apt-ftparchive release dists/stable > dists/stable/Release
+
+      - name: Sign Release file (Optional)
+        env:
+          GNUPG_PRIVATE_KEY: ${{ secrets.GNUPG_PRIVATE_KEY }}
+          GNUPG_PASSPHRASE: ${{ secrets.GNUPG_PASSPHRASE }}
+        run: |
+          if [ -n "$GNUPG_PRIVATE_KEY" ]; then
+            echo "$GNUPG_PRIVATE_KEY" | gpg --batch --import
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
+                --detach-sign --armor -o apt-repo/dists/stable/Release.gpg apt-repo/dists/stable/Release
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
+                --clearsign -o apt-repo/dists/stable/InRelease apt-repo/dists/stable/Release
+          fi
+
+      - name: Deploy to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: clean-repo_*.deb
+          draft: false
+          prerelease: false
+
+      - name: Deploy APT repo to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apt-repo
