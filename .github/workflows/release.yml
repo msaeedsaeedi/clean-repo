@@ -32,8 +32,10 @@ jobs:
           mkdir -p apt-repo/pool/main
           cp clean-repo_*.deb apt-repo/pool/main/
           cd apt-repo
-          dpkg-scanpackages pool /dev/null | gzip -9c > dists/stable/main/binary-all/Packages.gz
-          apt-ftparchive release dists/stable > dists/stable/Release
+          dpkg-scanpackages --arch all pool/ /dev/null > dists/stable/main/binary-all/Packages
+          gzip -9c dists/stable/main/binary-all/Packages > dists/stable/main/binary-all/Packages.gz
+          cd dists/stable
+          apt-ftparchive -o APT::FTPArchive::Release::Suite=stable -o APT::FTPArchive::Release::Codename=stable release . > Release
 
       - name: Sign Release file (Optional)
         env:
@@ -42,10 +44,11 @@ jobs:
         run: |
           if [ -n "$GNUPG_PRIVATE_KEY" ]; then
             echo "$GNUPG_PRIVATE_KEY" | gpg --batch --import
+            cd apt-repo/dists/stable
             gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
-                --detach-sign --armor -o apt-repo/dists/stable/Release.gpg apt-repo/dists/stable/Release
+                --detach-sign --armor -o Release.gpg Release
             gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
-                --clearsign -o apt-repo/dists/stable/InRelease apt-repo/dists/stable/Release
+                --clearsign -o InRelease Release
           fi
 
       - name: Deploy to GitHub Releases
