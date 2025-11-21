@@ -1,12 +1,12 @@
 Package: clean-repo
-Version: 1.0.1
+Version: 1.0.2
 Architecture: all
 Maintainer: Mohammad Saeed <imsaeedsaeedi@gmail.com>
-Filename: pool/main/clean-repo_1.0.1_all.deb
+Filename: pool/main/clean-repo_1.0.2_all.deb
 Size: 1058
-MD5sum: 89b9d529e8cb8c9d9e3ef0cb8b938145
-SHA1: e20d9d4d1f52c1c84195806c39eccf36cb54f9fb
-SHA256: 9a0ba29b8f53b621962f8c37def1f8cde707a834361fbc58ede7a95fc0890bde
+MD5sum: 748506667d3f23a40cb14c7d54d33be0
+SHA1: e4c7336ab536a9df0e399c962edbf611773994a1
+SHA256: 9500d3fd07bb2d28b7551a54032ac059a9d2e6806f78ab72a5ef8e99b52bf476
 Section: utils
 Priority: optional
 Description: A tool to delete files based on .gitignore patterns.
