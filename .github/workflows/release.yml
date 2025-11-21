@@ -49,6 +49,8 @@ jobs:
                 --detach-sign --armor -o Release.gpg Release
             gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
                 --clearsign -o InRelease Release
+             cd ../../..
+             gpg --armor --export > apt-repo/key.asc
           fi
 
       - name: Deploy to GitHub Releases
