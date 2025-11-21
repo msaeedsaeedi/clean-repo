@@ -1,0 +1,7 @@
+Package: clean-repo
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Mohammad Saeed <imsaeedsaeedi@gmail.com>
+Description: A tool to delete files based on .gitignore patterns.

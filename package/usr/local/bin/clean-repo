@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DRY_RUN=false
+
+if [[ "${1:-}" == "--dry-run" ]]; then
+    DRY_RUN=true
+    echo "[DRY RUN] Listing files that would be deleted..."
+fi
+
+if [[ ! -f .gitignore ]]; then
+    echo "Error: No .gitignore file found in this directory."
+    exit 1
+fi
+
+# Read patterns from .gitignore
+while IFS= read -r pattern; do
+    # Skip comments and empty lines
+    [[ -z "$pattern" ]] && continue
+    [[ "$pattern" =~ ^# ]] && continue
+
+    # Use 'git ls-files' to match ignore patterns safely
+    matches=$(git ls-files --ignored --exclude="$pattern" --others --directory)
+    
+    if [[ -z "$matches" ]]; then
+        continue
+    fi
+
+    echo "$matches" | while IFS= read -r file; do
+        if [[ "$DRY_RUN" = true ]]; then
+            echo "$file"
+        else
+            echo "Deleting $file"
+            rm -rf "$file"
+        fi
+    done
+done < .gitignore
+
+if [[ "$DRY_RUN" = true ]]; then
+    echo "[DRY RUN COMPLETE] Nothing was deleted."
+fi

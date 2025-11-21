@@ -1,0 +1,37 @@
+# --- Build artifacts ---
+*.deb
+build/
+public/
+apt_repo/
+
+# --- Debian packaging files (if generated later) ---
+*.changes
+*.build
+*.buildinfo
+*.ddeb
+*.udeb
+*.tar.gz
+
+# --- Logs ---
+*.log
+
+# --- OS / Editor files ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+
+# --- Node/npm cache (if you add CI tools later) ---
+node_modules/
+
+# --- Python cache (in case of scripts) ---
+__pycache__/
+*.pyc
+
+# --- GitHub Actions temp folders ---
+.github/workflows/*.tmp
+dist/
+
+# --- Backup ---
+*~
