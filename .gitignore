@@ -1,4 +1,10 @@
-# --- Build artifacts ---
+# --- Rust build artifacts ---
+/target
+Cargo.lock
+*.rs.bk
+*.pdb
+
+# --- Debian build artifacts ---
 *.deb
 build/
 public/

@@ -33,7 +33,7 @@ echo -e "${GREEN}✓${NC} GPG key installed"
 echo
 
 echo -e "${YELLOW}Step 2/3:${NC} Adding APT repository..."
-echo "deb [arch=all signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com/clean-repo stable main" | \
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com/clean-repo stable main" | \
     sudo tee /etc/apt/sources.list.d/clean-repo.list > /dev/null
 
 echo -e "${GREEN}✓${NC} Repository added"

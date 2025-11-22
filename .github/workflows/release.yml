@@ -15,26 +15,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y dpkg-dev build-essential gpg
+          sudo apt install -y libssl-dev pkg-config dpkg-dev build-essential gpg
+          cargo install cargo-deb
 
-      - name: Build .deb package
+      - name: Update version in Cargo.toml
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          sed -i "s/Version: .*/Version: $VERSION/" package/DEBIAN/control
-          dpkg-deb --build --root-owner-group package clean-repo_${VERSION}_all.deb
+          sed -i "s/^version = .*/version = \"$VERSION\"/" Cargo.toml
+
+      - name: Build Rust binary and .deb package
+        run: |
+          cargo build --release
+          cargo deb
+
+      - name: Copy .deb to workspace
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          cp target/debian/clean-repo_${VERSION}_amd64.deb ./clean-repo_${VERSION}_amd64.deb
 
       - name: Generate APT repository
         run: |
-          mkdir -p apt-repo/dists/stable/main/binary-all
+          mkdir -p apt-repo/dists/stable/main/binary-amd64
           mkdir -p apt-repo/pool/main
           cp clean-repo_*.deb apt-repo/pool/main/
           cp install.sh apt-repo/
           cd apt-repo
-          dpkg-scanpackages --arch all pool/ /dev/null > dists/stable/main/binary-all/Packages
-          gzip -9c dists/stable/main/binary-all/Packages > dists/stable/main/binary-all/Packages.gz
+          dpkg-scanpackages --arch amd64 pool/ /dev/null > dists/stable/main/binary-amd64/Packages
+          gzip -9c dists/stable/main/binary-amd64/Packages > dists/stable/main/binary-amd64/Packages.gz
           cd dists/stable
           apt-ftparchive -o APT::FTPArchive::Release::Suite=stable -o APT::FTPArchive::Release::Codename=stable release . > Release
 
