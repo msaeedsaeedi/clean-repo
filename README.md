@@ -22,14 +22,15 @@
 Run the installation script:
 
 ```bash
-curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh | bash
+bash <(curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh)
 ```
 
 Or download and inspect first:
 
 ```bash
 curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh -o install.sh
-bash install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 ### Option 2 — Manual APT Installation
