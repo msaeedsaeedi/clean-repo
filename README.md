@@ -17,7 +17,22 @@
 
 ## 🛠 Installation
 
-### Option 1 — Install via APT (recommended)
+### Option 1 — Quick Install (recommended)
+
+Run the installation script:
+
+```bash
+curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh | bash
+```
+
+Or download and inspect first:
+
+```bash
+curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh -o install.sh
+bash install.sh
+```
+
+### Option 2 — Manual APT Installation
 
 1. Install the GPG Public Key
    ```bash
@@ -38,7 +53,7 @@
    sudo apt install clean-repo
    ```
 
-### Option 2 — Manual Installation
+### Option 3 — Manual .deb Installation
 
 1. Download the `.deb` package from the Releases page.
 2. Install the package:
