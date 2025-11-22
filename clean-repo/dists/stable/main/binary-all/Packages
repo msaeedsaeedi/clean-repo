@@ -1,12 +1,12 @@
 Package: clean-repo
-Version: 1.2.1
+Version: 1.2.2
 Architecture: all
 Maintainer: Mohammad Saeed <imsaeedsaeedi@gmail.com>
-Filename: pool/main/clean-repo_1.2.1_all.deb
+Filename: pool/main/clean-repo_1.2.2_all.deb
 Size: 4254
-MD5sum: ffc80b0f568b065d4cd50073083cf197
-SHA1: 52bb928f386f0dd0c19d8f04e899675749544588
-SHA256: 9735e81b8fad51dd12199a32376918af71c8e613020a184b0d87af73b4b66791
+MD5sum: 14003b854caf7480348700c21f27cbee
+SHA1: f286388588e9c0db948079429c9c0c4115421f33
+SHA256: 74bd1548e8565d572a0eddcc219f70b29bdf8eda435e2506fa916a31efa7258c
 Section: utils
 Priority: optional
 Description: Remove files ignored by git
