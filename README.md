@@ -7,7 +7,10 @@
 ## 🚀 Features
 
 * Cleans files based on `.gitignore`
-* Supports `--dry-run` for previewing deletions
+* Safe dry-run mode by default (shows what would be deleted)
+* Pattern exclusion to keep specific files
+* Verbose and quiet modes
+* Comprehensive man page documentation
 * Easy installation with apt
 
 ---
@@ -49,16 +52,29 @@
 
 ## 🔧 Usage
 
-* Clean all ignored files:
+* Preview what would be deleted (dry-run):
 
   ```bash
   clean-repo
   ```
 
-* Dry run (preview deletions):
+* Actually delete ignored files:
 
   ```bash
-  clean-repo --dry-run
+  clean-repo -x
+  ```
+
+* Delete files but keep logs:
+
+  ```bash
+  clean-repo -i "*.log" -x
+  ```
+
+* Get detailed help:
+
+  ```bash
+  clean-repo --help
+  man clean-repo
   ```
 
 ---
