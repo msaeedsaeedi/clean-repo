@@ -1,0 +1,19 @@
+Codename: stable
+Date: Sat, 22 Nov 2025 06:42:47 +0000
+Suite: stable
+MD5Sum:
+ 79cb92e4edc211d0803243c1d1db60f4               69 Release
+ 77488859076fc8088c8fa78da479b966              804 main/binary-all/Packages
+ 523275609b38829426eea3b609c9b348              553 main/binary-all/Packages.gz
+SHA1:
+ c77a63670e65def8ee51635666434754017f99a7               69 Release
+ feca2d3d4e66eecc13933e04e30f5bb6bb2ffa3d              804 main/binary-all/Packages
+ 970075fbab4f315822639b9efa99e2bb39037d11              553 main/binary-all/Packages.gz
+SHA256:
+ f4e7e1db797e301e7a7953aa94e9cda69116670f64e11dd22d4a7b8d5fbfc62e               69 Release
+ 78512a4b026e9b6ad2befbc19631370144014a6e16be81764770f361ed529ed0              804 main/binary-all/Packages
+ 5d45441c1ccb38601f55389b480c5c17782dde02920711188cc00bfb56ccfa55              553 main/binary-all/Packages.gz
+SHA512:
+ d8b9edb8bf15470d633b29b824aa5a2c1da1141798760c8dbe23dff0fbd3763d7259b2187cca8e4ce1ef2a200ffb9fd1a4f6aca3fa156f8cd27dd8f852136585               69 Release
+ 2c4829266ba24a2af6155a106c40a711b7141c21fa7c34da841451bcdee61f174cc5aa010f7d9ea25f7560d4fabd880864ec87ed91d1df39382b838476f5186b              804 main/binary-all/Packages
+ 1cb0f50b4757dbed8a6850d87906d98cc35bff68fce6f61a7f7365b7fa112e55ad32a4fbfe99226c70b07ae6faa9dd19d36b57090645b0eeb36e2bcf3b406d4f              553 main/binary-all/Packages.gz
