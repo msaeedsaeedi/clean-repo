@@ -175,7 +175,13 @@ impl<'a> Cleaner<'a> {
             }
 
             let path_for_error = path.clone();
-            match fs::remove_dir_all(&path).or_else(|_| fs::remove_file(&path)) {
+            let deletion_result = if path.is_dir() {
+                fs::remove_dir_all(&path)
+            } else {
+                fs::remove_file(&path)
+            };
+            
+            match deletion_result {
                 Ok(_) => {
                     result.deleted.push(path);
                     self.log_debug(&format!("Deleted: {}", relative.display()));

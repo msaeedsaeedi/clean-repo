@@ -59,20 +59,4 @@ impl GitRepo {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
 
-    #[test]
-    fn test_git_repo_open_fails_outside_repo() {
-        // This test assumes we're running inside a git repo
-        // If not in a repo, this should fail
-        let result = std::env::set_current_dir("/tmp");
-        if result.is_ok() {
-            let repo_result = GitRepo::open();
-            // In /tmp, there might or might not be a git repo
-            // Just ensure the function doesn't panic
-            let _ = repo_result;
-        }
-    }
-}

@@ -51,12 +51,6 @@ impl PatternMatcher {
 
         false
     }
-
-    /// Get the number of patterns loaded
-    #[allow(dead_code)]
-    pub fn pattern_count(&self) -> usize {
-        self.patterns.len()
-    }
 }
 
 #[cfg(test)]
