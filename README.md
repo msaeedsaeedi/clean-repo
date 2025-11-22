@@ -21,13 +21,13 @@
 
 1. Install the GPG Public Key
    ```bash
-   curl -fsSL https://repo.msaeedsaeedi.com/key.asc | sudo gpg --dearmor -o /usr/share/keyrings/clean-repo-archive-keyring.gpg
+   curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/key.asc | sudo gpg --dearmor -o /usr/share/keyrings/clean-repo-archive-keyring.gpg
    ```
 
 2. Add the APT repository:
 
    ```bash
-   echo "deb [arch=all signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com stable main" | \
+   echo "deb [arch=all signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com/clean-repo stable main" | \
    sudo tee /etc/apt/sources.list.d/clean-repo.list > /dev/null
    ```
 
