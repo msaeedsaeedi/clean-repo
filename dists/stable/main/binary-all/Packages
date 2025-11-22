@@ -1,13 +1,21 @@
 Package: clean-repo
-Version: 1.0.2
+Version: 1.2.0
 Architecture: all
 Maintainer: Mohammad Saeed <imsaeedsaeedi@gmail.com>
-Filename: pool/main/clean-repo_1.0.2_all.deb
-Size: 1058
-MD5sum: 748506667d3f23a40cb14c7d54d33be0
-SHA1: e4c7336ab536a9df0e399c962edbf611773994a1
-SHA256: 9500d3fd07bb2d28b7551a54032ac059a9d2e6806f78ab72a5ef8e99b52bf476
+Filename: pool/main/clean-repo_1.2.0_all.deb
+Size: 4254
+MD5sum: 29a8f80d119322ab62bf87ec4b46d014
+SHA1: 8e663072bd555340b4269fe1345cca39b6fd9b21
+SHA256: cd39eacf2ff1922aa013c952816ae601832685c5732b2c16309b98ea652c5104
 Section: utils
 Priority: optional
-Description: A tool to delete files based on .gitignore patterns.
+Description: Remove files ignored by git
+ clean-repo is a command-line utility that removes files and directories
+ ignored by Git's .gitignore patterns. It operates in dry-run mode by
+ default for safety, showing which files would be deleted before any
+ actual removal occurs.
+ .
+ The tool supports pattern exclusion, allowing users to keep specific
+ files while cleaning others. It includes verbose and quiet modes for
+ flexible output control.
 
