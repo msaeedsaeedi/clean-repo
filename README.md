@@ -22,14 +22,15 @@
 Run the installation script:
 
 ```bash
-curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh | bash
+bash <(curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh)
 ```
 
 Or download and inspect first:
 
 ```bash
 curl -fsSL https://repo.msaeedsaeedi.com/clean-repo/install.sh -o install.sh
-bash install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 ### Option 2 — Manual APT Installation
@@ -42,7 +43,7 @@ bash install.sh
 2. Add the APT repository:
 
    ```bash
-   echo "deb [arch=all signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com/clean-repo stable main" | \
+   echo "deb [arch=amd64 signed-by=/usr/share/keyrings/clean-repo-archive-keyring.gpg] https://repo.msaeedsaeedi.com/clean-repo stable main" | \
    sudo tee /etc/apt/sources.list.d/clean-repo.list > /dev/null
    ```
 

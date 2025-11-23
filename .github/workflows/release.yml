@@ -1,67 +1,86 @@
-name: Release Debian Package
+name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
-  build-and-publish:
+  build-and-package:
+    name: Build and Create Debian Package
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y dpkg-dev build-essential gpg
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Build .deb package
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          sed -i "s/Version: .*/Version: $VERSION/" package/DEBIAN/control
-          dpkg-deb --build --root-owner-group package clean-repo_${VERSION}_all.deb
+      - name: Build release binary
+        run: cargo build --release
 
-      - name: Generate APT repository
-        run: |
-          mkdir -p apt-repo/dists/stable/main/binary-all
-          mkdir -p apt-repo/pool/main
-          cp clean-repo_*.deb apt-repo/pool/main/
-          cp install.sh apt-repo/
-          cd apt-repo
-          dpkg-scanpackages --arch all pool/ /dev/null > dists/stable/main/binary-all/Packages
-          gzip -9c dists/stable/main/binary-all/Packages > dists/stable/main/binary-all/Packages.gz
-          cd dists/stable
-          apt-ftparchive -o APT::FTPArchive::Release::Suite=stable -o APT::FTPArchive::Release::Codename=stable release . > Release
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
 
-      - name: Sign Release file (Optional)
-        env:
-          GNUPG_PRIVATE_KEY: ${{ secrets.GNUPG_PRIVATE_KEY }}
-          GNUPG_PASSPHRASE: ${{ secrets.GNUPG_PASSPHRASE }}
-        run: |
-          if [ -n "$GNUPG_PRIVATE_KEY" ]; then
-            echo "$GNUPG_PRIVATE_KEY" | gpg --batch --import
-            cd apt-repo/dists/stable
-            gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
-                --detach-sign --armor -o Release.gpg Release
-            gpg --batch --yes --pinentry-mode loopback --passphrase "$GNUPG_PASSPHRASE" \
-                --clearsign -o InRelease Release
-             cd ../../..
-             gpg --armor --export > apt-repo/key.asc
-          fi
+      - name: Create Debian package
+        run: cargo deb
 
-      - name: Deploy to GitHub Releases
-        uses: softprops/action-gh-release@v2
+      - name: Verify Debian package
+        run: |
+          cd target/debian
+          ls -la *.deb
+          dpkg-deb -I *.deb
+
+      - name: Upload Debian package artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: clean-repo_*.deb
-          draft: false
-          prerelease: false
+          name: clean-repo-deb
+          path: target/debian/*.deb
 
-      - name: Deploy APT repo to GitHub Pages
+  update-apt-repo:
+    name: Update APT Repository
+    runs-on: ubuntu-latest
+    needs: build-and-package
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Download Debian package
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-repo-deb
+          path: deb-package
+
+      - name: Setup APT repository structure
+        run: |
+          mkdir -p apt-repo
+          
+          # Copy new package
+          cp deb-package/*.deb apt-repo/
+          
+          # Generate Packages file
+          cd apt-repo
+          dpkg-scanpackages . /dev/null > Packages
+          gzip -k -f Packages
+          
+          # Generate Release file
+          apt-ftparchive release . > Release
+
+      - name: Publish to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -69,3 +88,22 @@ jobs:
           destination_dir: clean-repo
           cname: repo.msaeedsaeedi.com
           keep_files: true
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-and-package
+    steps:
+      - name: Download Debian package
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-repo-deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.deb
+          generate_release_notes: true
+          draft: false
+          prerelease: false

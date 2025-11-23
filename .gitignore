@@ -1,4 +1,9 @@
-# --- Build artifacts ---
+# --- Rust build artifacts ---
+/target
+*.rs.bk
+*.pdb
+
+# --- Debian build artifacts ---
 *.deb
 build/
 public/
