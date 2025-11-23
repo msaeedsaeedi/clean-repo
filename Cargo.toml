@@ -7,7 +7,8 @@ description = "A command-line tool that deletes files and directories ignored by
 license = "MIT"
 repository = "https://github.com/msaeedsaeedi/clean-repo"
 homepage = "https://github.com/msaeedsaeedi/clean-repo"
-keywords = ["git", "cli", "cleanup", "gitignore"]
+readme = "README.md"
+keywords = ["git", "cli", "cleanup", "gitignore", "clean"]
 categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
@@ -19,35 +20,31 @@ colored = "2.1"
 indicatif = "0.17"
 
 [profile.release]
-opt-level = 2
-lto = false          # Disable link-time optimization to speed up the build
-strip = true         # Strip symbols for a smaller binary
-codegen-units = 16   # Enable more parallelism in code generation
-panic = 'abort'      # Smaller binary
+opt-level = "z"
+lto = true
+strip = true
+panic = "abort"
+codegen-units = 1
 
 [package.metadata.deb]
 maintainer = "Mohammad Saeed <imsaeedsaeedi@gmail.com>"
 section = "utils"
 priority = "optional"
-depends = "$auto"
-assets = [
-    ["target/release/clean-repo", "usr/local/bin/", "755"],
-    ["man/clean-repo.1", "usr/local/share/man/man1/", "644"],
-]
+depends = "libc6, libgcc-s1, libssl3"
+conflicts = []
+replaces = []
 extended-description = """\
-clean-repo is a command-line tool that deletes files and directories \
-ignored by your project's .gitignore. It helps clean up temporary, \
-build, or generated files before committing or packaging your repository.\n\
-\n\
-Features:\n\
- - Cleans files based on .gitignore\n\
- - Safe dry-run mode by default (shows what would be deleted)\n\
- - Pattern exclusion to keep specific files\n\
- - Verbose and quiet modes\n\
- - Comprehensive man page documentation"""
+clean-repo is a command-line tool that safely deletes files and directories 
+ignored by your project's .gitignore rules.
 
-# Metadata for repository management
-[package.metadata.apt]
-repository-description = "Clean Repository Tool APT Repository"
-repository-origin = "clean-repo"
-repository-label = "Clean Repository"
+Features:
+• Cleans files based on .gitignore patterns
+• Safe dry-run mode by default
+• Pattern exclusion to keep specific files
+• Verbose and quiet modes
+• Fast and reliable"""
+
+assets = [
+    ["target/release/clean-repo", "usr/bin/", "755"],
+    ["man/clean-repo.1", "usr/share/man/man1/", "644"],
+]
