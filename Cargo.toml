@@ -18,11 +18,11 @@ colored = "2.1"
 indicatif = "0.17"
 
 [profile.release]
-opt-level = 'z'     # Optimize for size
-lto = true          # Link-time optimization
-strip = true        # Strip symbols
-codegen-units = 1   # Better optimization
-panic = 'abort'     # Smaller binary
+opt-level = 2
+lto = false          # Disable link-time optimization to speed up the build
+strip = true         # Strip symbols for a smaller binary
+codegen-units = 16   # Enable more parallelism in code generation
+panic = 'abort'      # Smaller binary
 
 [package.metadata.deb]
 maintainer = "Mohammad Saeed <imsaeedsaeedi@gmail.com>"
