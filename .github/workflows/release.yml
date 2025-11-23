@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-test:
     name: Build & Test
     runs-on: ubuntu-22.04
     outputs:
