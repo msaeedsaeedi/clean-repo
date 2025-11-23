@@ -10,20 +10,51 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-test:
-    name: Build & Test
+  build:
+    name: Build & Package
     runs-on: ubuntu-22.04
     outputs:
-      version: ${{ steps.extract-version.outputs.version }}
+      version: ${{ steps.extract-metadata.outputs.version }}
+      package-name: ${{ steps.extract-metadata.outputs.name }}
+      description: ${{ steps.extract-metadata.outputs.description }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract version
-        id: extract-version
-        run: echo "version=${{ github.ref_name }}" | sed 's/^version=v/version=/' >> $GITHUB_OUTPUT
-
       - uses: dtolnay/rust-toolchain@stable
+
+      - name: Extract metadata using Cargo CLI
+        id: extract-metadata
+        run: |
+          # Install jq for JSON parsing
+          sudo apt-get update && sudo apt-get install -y jq
+          
+          # Extract metadata once
+          CARGO_METADATA=$(cargo metadata --format-version 1 --no-deps --quiet)
+          CARGO_VERSION=$(echo "$CARGO_METADATA" | jq -r '.packages[0].version')
+          CARGO_NAME=$(echo "$CARGO_METADATA" | jq -r '.packages[0].name')
+          CARGO_DESCRIPTION=$(echo "$CARGO_METADATA" | jq -r '.packages[0].description')
+
+          # Extract version from tag for validation
+          TAG_VERSION="${{ github.ref_name }}"; TAG_VERSION="${TAG_VERSION#v}"
+
+          # Validate version match
+          if [[ "$CARGO_VERSION" != "$TAG_VERSION" ]]; then
+            echo "Warning: Cargo.toml version ($CARGO_VERSION) doesn't match tag version ($TAG_VERSION)"
+            echo "Using tag version: $TAG_VERSION"
+            VERSION="$TAG_VERSION"
+          else
+            echo "Version validation passed: $CARGO_VERSION"
+            VERSION="$CARGO_VERSION"
+          fi
+
+          # Get APT-specific description
+          APT_DESC=$(grep -A 2 '\[package\.metadata\.apt\]' Cargo.toml | grep 'repository-description' | sed 's/repository-description = "\(.*\)"/\1/' || echo "${CARGO_DESCRIPTION} APT Repository")
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "name=${CARGO_NAME}" >> $GITHUB_OUTPUT
+          echo "description=${APT_DESC}" >> $GITHUB_OUTPUT
+          echo "Extracted metadata: Name=${CARGO_NAME}, Version=${VERSION}, Description=${APT_DESC}"
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -38,17 +69,11 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt update
-          sudo apt install -y libssl-dev pkg-config dpkg-dev gpg apt-utils
+          sudo apt install -y libssl-dev pkg-config
 
       - name: Install cargo-deb (cached)
         run: |
           command -v cargo-deb >/dev/null || cargo install cargo-deb --locked
-
-      - name: Update version in Cargo.toml
-        run: |
-          VERSION="${{ steps.extract-version.outputs.version }}"
-          perl -i -pe "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          grep "^version" Cargo.toml
 
       - name: Build release binary
         run: cargo build --release
@@ -59,13 +84,13 @@ jobs:
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deb
+          name: deb-package
           path: target/debian/*.deb
 
   publish:
-    name: Publish Release & APT Repo
+    name: Publish Release & APT Repository
     runs-on: ubuntu-22.04
-    needs: build-test
+    needs: build
     permissions:
       contents: write
       pages: write
@@ -74,48 +99,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download .deb artifact
+      - name: Download .deb package
         uses: actions/download-artifact@v4
         with:
-          name: deb
-          path: apt-repo/pool/main
+          name: deb-package
+          path: deb-files
 
-      - name: Build APT repo structure
-        run: |
-          VERSION=${{ needs.build-test.outputs.version }}
-          mkdir -p apt-repo/dists/stable/main/binary-amd64
-          cd apt-repo
-          dpkg-scanpackages pool/main > \
-            dists/stable/main/binary-amd64/Packages
-          gzip -fk dists/stable/main/binary-amd64/Packages
-          apt-ftparchive release dists/stable > dists/stable/Release
+      - name: Setup APT Repository
+        uses: ./.github/actions/setup-apt-repo
+        with:
+          package-name: ${{ needs.build.outputs.package-name }}
+          package-description: ${{ needs.build.outputs.description }}
+          deb-files-path: deb-files
+          output-path: apt-repo
+          gpg-private-key: ${{ secrets.GNUPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GNUPG_PASSPHRASE }}
 
-      - name: Import GPG & sign
-        env:
-          GNUPG_PRIVATE_KEY: ${{ secrets.GNUPG_PRIVATE_KEY }}
-          GNUPG_PASSPHRASE: ${{ secrets.GNUPG_PASSPHRASE }}
-        run: |
-          echo "$GNUPG_PRIVATE_KEY" | gpg --batch --import
-          gpg --batch --yes \
-            --pinentry-mode loopback \
-            --passphrase "$GNUPG_PASSPHRASE" \
-            --detach-sign --armor \
-            -o apt-repo/dists/stable/Release.gpg \
-            apt-repo/dists/stable/Release
-          gpg --batch --yes \
-            --pinentry-mode loopback \
-            --passphrase "$GNUPG_PASSPHRASE" \
-            --clearsign \
-            -o apt-repo/dists/stable/InRelease \
-            apt-repo/dists/stable/Release
-          gpg --armor --export > apt-repo/key.asc
-
-      - name: Publish .deb to GitHub Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: apt-repo/pool/main/*.deb
+          files: deb-files/*.deb
+          name: Release ${{ needs.build.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          body: |
+            ## ${{ needs.build.outputs.package-name }} v${{ needs.build.outputs.version }}
+            
+            ### Installation
 
-      - name: Deploy APT repo to GitHub Pages
+            #### Direct Download
+            Download the `.deb` package and install:
+            ```bash
+            sudo dpkg -i clean-repo_${{ needs.build.outputs.version }}_amd64.deb
+            ```
+            
+            #### APT Repository
+            Add the APT repository for automatic updates:
+            ```bash
+            curl -s https://repo.msaeedsaeedi.com/clean-repo/key.asc | sudo apt-key add -
+            echo "deb https://repo.msaeedsaeedi.com/clean-repo stable main" | sudo tee /etc/apt/sources.list.d/clean-repo.list
+            sudo apt update
+            sudo apt install clean-repo
+            ```
+
+      - name: Deploy APT Repository to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

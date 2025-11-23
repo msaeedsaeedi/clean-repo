@@ -1,0 +1,207 @@
+name: 'Setup APT Repository'
+description: 'Build and sign APT repository from Debian packages'
+author: 'Mohammad Saeed <imsaeedsaeedi@gmail.com>'
+
+inputs:
+  package-name:
+    description: 'Name of the package'
+    required: true
+  package-description:
+    description: 'Package description'
+    required: true
+  deb-files-path:
+    description: 'Path to directory containing .deb files'
+    required: true
+    default: '.'
+  output-path:
+    description: 'Output directory for APT repository'
+    required: false
+    default: 'apt-repo'
+  suite:
+    description: 'APT suite name'
+    required: false
+    default: 'stable'
+  component:
+    description: 'APT component name'
+    required: false
+    default: 'main'
+  architecture:
+    description: 'Target architecture'
+    required: false
+    default: 'amd64'
+  gpg-private-key:
+    description: 'GPG private key for signing'
+    required: true
+  gpg-passphrase:
+    description: 'GPG passphrase'
+    required: true
+
+outputs:
+  repo-path:
+    description: 'Path to the generated APT repository'
+    value: ${{ inputs.output-path }}
+  packages-count:
+    description: 'Number of packages in the repository'
+    value: ${{ steps.count-packages.outputs.count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        # Check if deb-files-path exists and contains .deb files
+        if [[ ! -d "${{ inputs.deb-files-path }}" ]]; then
+          echo "Error: deb-files-path '${{ inputs.deb-files-path }}' does not exist"
+          exit 1
+        fi
+
+        DEB_COUNT=$(find "${{ inputs.deb-files-path }}" -name "*.deb" | wc -l)
+        if [[ "$DEB_COUNT" -eq 0 ]]; then
+          echo "Error: No .deb files found in '${{ inputs.deb-files-path }}'"
+          exit 1
+        fi
+
+    - name: Install APT repository tools
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install -y dpkg-dev apt-utils gpg
+
+    - name: Setup APT repository structure
+      shell: bash
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        SUITE="${{ inputs.suite }}"
+        COMPONENT="${{ inputs.component }}"
+        ARCH="${{ inputs.architecture }}"
+
+        # Create necessary directories
+        mkdir -p "${REPO_PATH}/pool/${COMPONENT}"
+        mkdir -p "${REPO_PATH}/dists/${SUITE}/${COMPONENT}/binary-${ARCH}"
+
+        # Copy .deb files to pool
+        find "${{ inputs.deb-files-path }}" -name "*.deb" -exec cp {} "${REPO_PATH}/pool/${COMPONENT}/" \;
+
+        echo "Repository structure created at ${REPO_PATH}"
+
+    - name: Generate Packages file
+      shell: bash
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        SUITE="${{ inputs.suite }}"
+        COMPONENT="${{ inputs.component }}"
+        ARCH="${{ inputs.architecture }}"
+
+        # Generate Packages file
+        cd "${REPO_PATH}"
+        dpkg-scanpackages "pool/${COMPONENT}" /dev/null > \
+          "dists/${SUITE}/${COMPONENT}/binary-${ARCH}/Packages"
+
+        # Compress Packages file
+        gzip -fk "dists/${SUITE}/${COMPONENT}/binary-${ARCH}/Packages"
+
+        echo "Packages file generated and compressed."
+
+    - name: Generate Release file
+      shell: bash
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        SUITE="${{ inputs.suite }}"
+        COMPONENT="${{ inputs.component }}"
+        ARCH="${{ inputs.architecture }}"
+        PACKAGE_NAME="${{ inputs.package-name }}"
+        PACKAGE_DESC="${{ inputs.package-description }}"
+
+        # Create Release file with metadata
+        cd "${REPO_PATH}"
+        cat > "dists/${SUITE}/Release" << EOF
+        Origin: ${PACKAGE_NAME}
+        Label: ${PACKAGE_NAME}
+        Suite: ${SUITE}
+        Codename: ${SUITE}
+        Architectures: ${ARCH}
+        Components: ${COMPONENT}
+        Description: ${PACKAGE_DESC}
+        Date: $(date -Ru)
+        EOF
+
+        # Add file checksums to Release file
+        apt-ftparchive release "dists/${SUITE}" >> "dists/${SUITE}/Release"
+
+        echo "Release file created."
+
+    - name: Import GPG key and sign repository
+      shell: bash
+      env:
+        GNUPG_PRIVATE_KEY: ${{ inputs.gpg-private-key }}
+        GNUPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        SUITE="${{ inputs.suite }}"
+
+        cd "${REPO_PATH}"
+
+        # Import GPG key
+        echo "$GNUPG_PRIVATE_KEY" | gpg --batch --import
+
+        # Sign Release file
+        gpg --batch --yes \
+          --pinentry-mode loopback \
+          --passphrase "$GNUPG_PASSPHRASE" \
+          --detach-sign --armor \
+          -o "dists/${SUITE}/Release.gpg" \
+          "dists/${SUITE}/Release"
+
+        # Create InRelease (clear-signed)
+        gpg --batch --yes \
+          --pinentry-mode loopback \
+          --passphrase "$GNUPG_PASSPHRASE" \
+          --clearsign \
+          -o "dists/${SUITE}/InRelease" \
+          "dists/${SUITE}/Release"
+
+        # Export public key
+        gpg --armor --export > key.asc
+
+        echo "Repository signing completed."
+
+    - name: Count packages
+      id: count-packages
+      shell: bash
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        COUNT=$(find "${REPO_PATH}/pool" -name "*.deb" | wc -l)
+        echo "count=${COUNT}" >> $GITHUB_OUTPUT
+        echo "Repository contains ${COUNT} package(s)"
+
+    - name: Validate repository structure
+      shell: bash
+      run: |
+        REPO_PATH="${{ inputs.output-path }}"
+        SUITE="${{ inputs.suite }}"
+        COMPONENT="${{ inputs.component }}"
+        ARCH="${{ inputs.architecture }}"
+
+        cd "${REPO_PATH}"
+
+        REQUIRED_FILES=(
+          "dists/${SUITE}/Release"
+          "dists/${SUITE}/Release.gpg"
+          "dists/${SUITE}/InRelease"
+          "dists/${SUITE}/${COMPONENT}/binary-${ARCH}/Packages"
+          "dists/${SUITE}/${COMPONENT}/binary-${ARCH}/Packages.gz"
+          "key.asc"
+        )
+
+        # Check if required files exist
+        for file in "${REQUIRED_FILES[@]}"; do
+          if [[ ! -f "$file" ]]; then
+            echo "Error: Required file '$file' is missing"
+            exit 1
+          fi
+        done
+
+        echo "✅ Repository validation passed"
+        echo "Repository structure:"
+        find . -type f | sort

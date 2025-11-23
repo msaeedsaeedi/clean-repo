@@ -6,6 +6,7 @@ authors = ["Mohammad Saeed <imsaeedsaeedi@gmail.com>"]
 description = "A command-line tool that deletes files and directories ignored by your project's .gitignore"
 license = "MIT"
 repository = "https://github.com/msaeedsaeedi/clean-repo"
+homepage = "https://github.com/msaeedsaeedi/clean-repo"
 keywords = ["git", "cli", "cleanup", "gitignore"]
 categories = ["command-line-utilities", "development-tools"]
 
@@ -28,6 +29,7 @@ panic = 'abort'      # Smaller binary
 maintainer = "Mohammad Saeed <imsaeedsaeedi@gmail.com>"
 section = "utils"
 priority = "optional"
+depends = "$auto"
 assets = [
     ["target/release/clean-repo", "usr/local/bin/", "755"],
     ["man/clean-repo.1", "usr/local/share/man/man1/", "644"],
@@ -43,3 +45,9 @@ Features:\n\
  - Pattern exclusion to keep specific files\n\
  - Verbose and quiet modes\n\
  - Comprehensive man page documentation"""
+
+# Metadata for repository management
+[package.metadata.apt]
+repository-description = "Clean Repository Tool APT Repository"
+repository-origin = "clean-repo"
+repository-label = "Clean Repository"
