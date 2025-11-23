@@ -1,0 +1,26 @@
+Package: clean-repo
+Version: 1.3.0-1
+Architecture: amd64
+Maintainer: Mohammad Saeed <imsaeedsaeedi@gmail.com>
+Installed-Size: 1179
+Depends: libc6, libgcc-s1, libssl3
+Filename: ./clean-repo_1.3.0-1_amd64.deb
+Size: 487304
+MD5sum: ea4d43f5112d88f10590859684b2e6d2
+SHA1: bf94ad281d208527fb92097b8fa5878451ce6953
+SHA256: 36c7663c789a55a6e176bba1597cb92f65813eb4fd5ef68038a23129c936467d
+Section: utils
+Priority: optional
+Homepage: https://github.com/msaeedsaeedi/clean-repo
+Description: A command-line tool that deletes files and directories ignored by your
+ project's .gitignore
+ clean-repo is a command-line tool that safely deletes files and directories
+ ignored by your project's .gitignore rules.
+ .
+ Features:
+ • Cleans files based on .gitignore patterns
+ • Safe dry-run mode by default
+ • Pattern exclusion to keep specific files
+ • Verbose and quiet modes
+ • Fast and reliable
+

@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+
+jobs:
+  build-and-package:
+    name: Build and Create Debian Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Install cargo-deb
+        run: cargo install cargo-deb
+
+      - name: Create Debian package
+        run: cargo deb
+
+      - name: Verify Debian package
+        run: |
+          cd target/debian
+          ls -la *.deb
+          dpkg-deb -I *.deb
+
+      - name: Upload Debian package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-repo-deb
+          path: target/debian/*.deb
+
+  update-apt-repo:
+    name: Update APT Repository
+    runs-on: ubuntu-latest
+    needs: build-and-package
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Download Debian package
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-repo-deb
+          path: deb-package
+
+      - name: Setup APT repository structure
+        run: |
+          mkdir -p apt-repo
+          
+          # Copy new package
+          cp deb-package/*.deb apt-repo/
+          
+          # Generate Packages file
+          cd apt-repo
+          dpkg-scanpackages . /dev/null > Packages
+          gzip -k -f Packages
+          
+          # Generate Release file
+          apt-ftparchive release . > Release
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apt-repo
+          destination_dir: clean-repo
+          cname: repo.msaeedsaeedi.com
+          keep_files: true
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-and-package
+    steps:
+      - name: Download Debian package
+        uses: actions/download-artifact@v4
+        with:
+          name: clean-repo-deb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.deb
+          generate_release_notes: true
+          draft: false
+          prerelease: false
