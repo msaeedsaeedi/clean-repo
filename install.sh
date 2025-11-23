@@ -1,33 +1,20 @@
 #!/bin/bash
 set -e
 
-REPO_URL="https://msaeedsaeedi.github.io/clean-repo"
+REPO_URL="https://repo.msaeedsaeedi.com/clean-repo"
 APT_LIST_FILE="/etc/apt/sources.list.d/clean-repo.list"
 
-echo "Installing clean-repo via APT repository..."
+echo "Installing clean-repo..."
 
-# Check if we're on a supported system
+# Check for APT
 if ! command -v apt >/dev/null 2>&1; then
-    echo "Error: This installation method requires APT (Debian/Ubuntu)"
-    echo "Please check README for other installation options."
+    echo "Error: APT not found. This script requires Debian/Ubuntu."
     exit 1
 fi
 
-# Add repository
-echo "Adding clean-repo APT repository..."
-echo "deb [trusted=yes] $REPO_URL/apt-repo/ ./" | sudo tee "$APT_LIST_FILE" > /dev/null
-
-# Update package lists and install
-echo "Installing clean-repo..."
+# Add repository and install
+echo "deb [trusted=yes] $REPO_URL/ ./" | sudo tee "$APT_LIST_FILE" > /dev/null
 sudo apt update
-sudo apt install clean-repo -y
+sudo apt install -y clean-repo
 
-echo ""
-echo "🎉 clean-repo installed successfully!"
-echo ""
-echo "To update in the future, run:"
-echo "  sudo apt update && sudo apt upgrade"
-echo ""
-echo "To uninstall, run:"
-echo "  sudo apt remove clean-repo"
-echo "  sudo rm $APT_LIST_FILE"
+echo "✓ clean-repo installed successfully!"

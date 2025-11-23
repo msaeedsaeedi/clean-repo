@@ -67,13 +67,13 @@ jobs:
 
       - name: Setup APT repository structure
         run: |
-          mkdir -p gh-pages/apt-repo
+          mkdir -p apt-repo
           
           # Copy new package
-          cp deb-package/*.deb gh-pages/apt-repo/
+          cp deb-package/*.deb apt-repo/
           
           # Generate Packages file
-          cd gh-pages/apt-repo
+          cd apt-repo
           dpkg-scanpackages . /dev/null > Packages
           gzip -k -f Packages
           
