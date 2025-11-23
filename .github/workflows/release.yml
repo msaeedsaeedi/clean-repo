@@ -8,6 +8,11 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 env:
   CARGO_NET_GIT_FETCH_WITH_CLI: true
 
